@@ -1,20 +1,21 @@
 var axios = require('axios');
 require('dotenv').config();
-// var moment = require('moment');
+var fs = require('fs');
 var Spotify = require('node-spotify-api');
+var Twitter = require('twitter');
 var keys = require("./keys.js");
 
 var spotify = new Spotify(keys.spotify);
 var omdbkey = keys.omdb
+var twitter = new Twitter(keys.twitter)
 
 var action = process.argv[2];
 var search = process.argv[3];
 
  var omdbaxios = "http://www.omdbapi.com/?t=" + search + "&plot=full&rotten=true&apikey=" + omdbkey;
 
-
+function prompt(){
 if(action==="movie-this"){
-    console.log("Movie Time")
     axios.get(omdbaxios).then(
     function(response){
         console.log("Title: " + response.data.Title);
@@ -64,11 +65,36 @@ spotify.search({type: 'track', query: search}, function(err,data){
 
 
 
-else if (action === "concert-this"){
-
-
+else if (action === "tweet-this"){
+twitter.post('statuses/update', {status: search})
+.then(function (tweet) {
+      console.log(tweet);
+      console.log("Made it");
+}).catch(function (error) {
+    throw error;
+  });
 }
+
+
+
 
 else if (action === "do-what-it-says"){
+fs.readFile("random.text","utf8",function(err,data){
+    if(err){
+        return console.log(err);
+    
+    }
+    else{
+    var dataArr = data.split(",");
+    action = dataArr[0];
+    search = dataArr[1];
+    }
+    prompt();
+
+    
+});
+}
 
 }
+
+prompt();
